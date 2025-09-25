@@ -1,8 +1,65 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ExceptionHandler } from './core/exception_handlers/exception_handler';
+import { Status } from './domain/dtos/response_dto';
+import { Constants, Strings } from './core/constants/constants';
+import { v2 as cloudinary } from 'cloudinary';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+  app.enableCors({});
+  app.useGlobalPipes(new ValidationPipe());
+
+  const config = new DocumentBuilder()
+    .setTitle(`${Strings.appName} API`)
+    .setDescription('')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      Constants.swaggerBearerAuth,
+    )
+    .addGlobalResponse({
+      status: 400,
+      description: 'Failed',
+      schema: {
+        type: 'object',
+        properties: new Status().toDoc(),
+      },
+    })
+    .build();
+
+  app.setGlobalPrefix('api/v1');
+  app.useGlobalFilters(new ExceptionHandler(app.get(HttpAdapterHost)));
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/v1/docs', app, document, {
+    swaggerOptions: {
+      useGlobalPrefix: true,
+      persistAuthorization: true,
+    },
+  });
+
+  cloudinary.config({
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    hide_sensitive: true,
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  });
+
+  await app.listen(process.env.PORT ?? 5001, () => {
+    const baseUrl = `http://localhost:${process.env.PORT ?? 3000}/api/v1`;
+    console.log(`Server running on port ${baseUrl}`);
+    console.log(`Documentation running on ${baseUrl}/docs`);
+  });
 }
+
 bootstrap();
