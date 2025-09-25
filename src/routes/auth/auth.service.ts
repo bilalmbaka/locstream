@@ -24,13 +24,12 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { EmailService } from 'src/core/services/mail_service';
 import { Strings } from 'src/core/constants/constants';
-import { Helpers } from 'src/core/helpers/helpers';
 import { AuthTokenService } from 'src/core/services/token_service';
 import { AccessTokenEntity } from 'src/domain/entities/access_token_entity';
 import { UserRole } from 'src/core/constants/enums';
 import { DBExceptionHandler } from 'src/core/exception_handlers/db_exception_handler';
 import { AuthUser } from 'src/domain/auth_user_decorator';
-
+import { Helpers } from 'src/core/helpers/helpers';
 
 @Injectable()
 export class AuthService {
@@ -93,26 +92,34 @@ export class AuthService {
 
     async signUp(dto: SignupDTO): Promise<ResponseDto<string>> {
         try {
-            let referrerUser: UserEntity | null = null;
-
             const user = await this.userRepository.findOne({
-                where: { email: dto.email },
+                where: [
+                    { email: dto.email.toLocaleLowerCase() },
+                    { userName: dto.userName.toLocaleLowerCase() },
+                ],
                 withDeleted: true,
             });
 
-            if (user && user.emailVerified && !user.deletedAt) {
-                throw new ConflictException('User with email address already exists');
+            if (user) {
+                if (user.userName == dto.userName.toLowerCase()) {
+                    throw new ConflictException('User with user name already exists');
+                }
+                if (
+                    user.email == user.email.toLowerCase() &&
+                    user.emailVerified &&
+                    !user.deletedAt
+                ) {
+                    throw new ConflictException('User with email address already exists');
+                }
             }
 
             if (!user) {
                 await this.userRepository.save({
                     email: dto.email,
+                    userName: dto.userName,
                     password: await this._hashPassword(dto.password),
-                    referrerId:
-                        `${Strings.appName}-${Helpers.generateUserName(dto.email)}`.toLowerCase(),
-                    referredBy: referrerUser ?? undefined,
                     role: dto.role ? dto.role : UserRole.user,
-                });
+                } as UserEntity);
             }
 
             if (dto.role == UserRole.user) {
@@ -302,6 +309,32 @@ export class AuthService {
             );
         } catch (e) {
             throw DBExceptionHandler.handleException(e);
+        }
+    }
+
+    async suggestUserNames(email: string): Promise<ResponseDto<string[]>> {
+        try {
+            let index: number = 0;
+            const names: string[] = [];
+
+            while (names.length < 5 && index < 10) {
+                const suggestion = Helpers.generateUserName(email);
+
+                const existingUser = await this.userRepository.findOneBy({
+                    userName: suggestion,
+                });
+
+                if (!existingUser) {
+                    names.push(suggestion);
+                }
+
+                index++; //incase we just couldn't generate a non existent username.
+                //then prevent an infinite loop
+            }
+
+            return new Status<string[]>().success(Strings.successString, HttpStatus.OK, names);
+        } catch (e) {
+            throw e;
         }
     }
 

@@ -69,17 +69,16 @@ export class SignupDTO {
     email: string;
 
     @ApiProperty({
+        example: Strings.exampleUserName,
+    })
+    @IsString()
+    userName: string;
+
+    @ApiProperty({
         example: Strings.examplePassword,
     })
     @IsString()
     password: string;
-
-    @ApiProperty({
-        example: Strings.exampleUserName,
-    })
-    @IsString()
-    @IsOptional()
-    referredBy: string;
 
     @IsEnum(UserRole)
     @IsOptional()

@@ -104,43 +104,4 @@ export class UsersService {
       throw DBExceptionHandler.handleException(e);
     }
   }
-
-  async suggestUserNames(user: UserEntity): Promise<ResponseDto<string[]>> {
-    try {
-      let index: number = 0;
-      const names: string[] = [];
-
-      console.log('in here', names.length, index);
-
-      while (names.length < 5 && index < 10) {
-        console.log('suggesting username at index', index);
-        const suggestion = Helpers.generateUserName(user.email);
-
-        console.log(
-          'suggesting username generate for index',
-          index,
-          'is',
-          suggestion,
-        );
-        const existingUser = await this.userRepository.findOneBy({
-          userName: suggestion,
-        });
-
-        if (!existingUser) {
-          names.push(suggestion);
-        }
-
-        index++; //incase we just couldn't generate a non existent username.
-        //then prevent an infinite loop
-      }
-
-      return new Status<string[]>().success(
-        Strings.successString,
-        HttpStatus.OK,
-        names,
-      );
-    } catch (e) {
-      throw e;
-    }
-  }
 }

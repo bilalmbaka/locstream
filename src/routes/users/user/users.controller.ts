@@ -81,19 +81,4 @@ export class UsersController {
     deleteProfile(@AuthUser() user: UserEntity): Promise<ResponseDto<string>> {
         return this.usersService.deleteUserAccount(user.id, true);
     }
-
-    //update user profile route
-    @Get('/suggest-usernames')
-
-    //documentation
-    @ApiOperation({})
-    @ApiResponse({
-        schema: {
-            type: 'object',
-            properties: new Status().toDoc(),
-        },
-    })
-    suggestUserNames(@AuthUser() user: UserEntity): Promise<ResponseDto<string[]>> {
-        return this.usersService.suggestUserNames(user);
-    }
 }

@@ -7,6 +7,8 @@ import {
     BadRequestException,
     UseGuards,
     Patch,
+    Get,
+    Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -230,5 +232,20 @@ export class AuthController {
         }
 
         return this.authService.refreshToken(dto.refreshToken);
+    }
+
+    //update user profile route
+    @Get('/suggest-usernames')
+
+    //documentation
+    @ApiOperation({})
+    @ApiResponse({
+        schema: {
+            type: 'object',
+            properties: new Status().toDoc(),
+        },
+    })
+    suggestUserNames(@Query('email') email: string): Promise<ResponseDto<string[]>> {
+        return this.authService.suggestUserNames(email);
     }
 }

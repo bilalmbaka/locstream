@@ -1,4 +1,4 @@
-import { QueryFailedError } from 'typeorm';
+import { EntityNotFoundError, QueryFailedError } from 'typeorm';
 
 export class DBException extends Error {
     errorMessage = 'Database exception has occurred';
@@ -14,7 +14,11 @@ export class DBExceptionHandler {
         if (error instanceof QueryFailedError) {
             const cast = error as QueryFailedError;
 
-            console.log('Cast ', cast);
+            return new DBException(cast.message, cast);
+        }
+
+        if (error instanceof EntityNotFoundError) {
+            const cast = error as EntityNotFoundError;
 
             return new DBException(cast.message, cast);
         }
