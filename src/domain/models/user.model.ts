@@ -64,7 +64,7 @@ export class User {
     })
     @IsOptional()
     @IsEnum(UserRole)
-    role: UserRole;
+    role?: UserRole;
 
     @ApiProperty({})
     @IsObject()

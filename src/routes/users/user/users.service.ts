@@ -127,11 +127,9 @@ export class UsersService {
                 currentLocation = JSON.parse(dto.currentLocation);
             }
 
-            await this.userRepository.update(
+            await this.userRepository.save(
                 {
                     id: user.id,
-                },
-                {
                     userName: dto.userName,
                     profilePicture: picture,
                     currentLocation: {
@@ -139,6 +137,9 @@ export class UsersService {
                         coordinates: [currentLocation?.lng, currentLocation?.lat],
                     },
                 } as UserEntity,
+                {
+                    listeners: dto.currentLocation ? true : false,
+                },
             );
 
             const updatedProfile = await this.fetchUserById(user.id);
@@ -167,9 +168,15 @@ export class UsersService {
                 throw new UnauthorizedException('Incorrect  otp');
             }
 
-            await this.userRepository.update(user.id, {
-                email: email,
-            });
+            await this.userRepository.save(
+                {
+                    id: user.id,
+                    email: email,
+                },
+                {
+                    listeners: false,
+                },
+            );
 
             return this.fetchUserById(user.id);
         } catch (e) {
