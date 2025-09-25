@@ -55,4 +55,15 @@ export class Helpers {
                 throw new BadRequestException('Pagination gap too large');
         }
     }
+
+    static generateOtp(): string {
+        let otp = '';
+        const source = '0123456789';
+
+        while (otp.length < 4) {
+            otp = `${otp}${source.charAt(Math.floor(Math.random() * source.length))}`;
+        }
+
+        return otp;
+    }
 }

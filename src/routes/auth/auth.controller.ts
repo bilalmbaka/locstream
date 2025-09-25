@@ -126,7 +126,11 @@ export class AuthController {
         },
     })
     sendOtp(@Body() body: { email: string }): Promise<ResponseDto<string>> {
-        return this.authService.sendOtp(body.email);
+        return this.authService.sendOtp({
+            existingUserEmail: body.email,
+            receiverEmail: body.email,
+            verifyEmail: true,
+        });
     }
 
     //Verify account route

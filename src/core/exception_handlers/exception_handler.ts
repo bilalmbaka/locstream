@@ -37,7 +37,7 @@ export class ExceptionHandler implements ExceptionFilter {
     }
 
     handleException(error: unknown): ResponseDto<any> {
-        // console.log('Exception caught =============> \n\n\n', error, '\n\n\n');
+        console.log('Exception caught =============> \n\n\n', error, '\n\n\n');
 
         if (error instanceof BadRequestException || error instanceof ForbiddenException) {
             const errorMessage = error.getResponse() as { message: string };

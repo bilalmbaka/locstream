@@ -1,6 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDate, IsEmail, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+    IsBoolean,
+    IsDate,
+    IsEmail,
+    IsEnum,
+    IsObject,
+    IsOptional,
+    IsString,
+    IsUUID,
+} from 'class-validator';
 import { UserRole } from 'src/core/constants/enums';
+import { Asset } from './assets_model';
 
 export class User {
     @ApiProperty()
@@ -32,10 +42,6 @@ export class User {
 
     @ApiProperty()
     @IsString()
-    referralId: string;
-
-    @ApiProperty()
-    @IsString()
     @IsOptional()
     accessToken?: string;
 
@@ -59,6 +65,18 @@ export class User {
     @IsOptional()
     @IsEnum(UserRole)
     role: UserRole;
+
+    @ApiProperty({})
+    @IsObject()
+    @IsOptional()
+    currentLocation?: {
+        lat: number;
+        lng: number;
+    };
+
+    @ApiProperty()
+    @IsOptional()
+    profilePicture?: Asset;
 }
 
 export class TokenModel {

@@ -61,12 +61,21 @@ export class AdminDeleteUserProfileDTO {
 }
 
 export class UpdateUserProfileDTO {
-    // @ApiProperty({
-    //     example: Strings.exampleEmail,
-    // })
-    // @IsEmail()
-    // @IsOptional()
-    // email: string;
+    @ApiProperty({
+        type: String,
+        format: 'binary',
+        required: false,
+    })
+    @IsString()
+    @IsOptional()
+    profilePic: string[];
+
+    @ApiProperty({
+        example: Strings.exampleEmail,
+    })
+    @IsEmail()
+    @IsOptional()
+    email: string;
 
     @ApiProperty({
         example: Strings.exampleUserName,
@@ -74,6 +83,18 @@ export class UpdateUserProfileDTO {
     @IsString()
     @IsOptional()
     userName: string;
+
+    @ApiProperty({
+        type: Object,
+        description: 'Coordinates of the location',
+        example: {
+            lat: 1.2345,
+            lng: 0.14455,
+        },
+        required: false,
+    })
+    @IsOptional()
+    currentLocation: string;
 }
 
 export class FindUserDTO {

@@ -6,11 +6,21 @@ import {
     Get,
     HttpStatus,
     Patch,
+    UploadedFile,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthenticatedUserGuard } from 'src/guards/authenticated_user_guard';
-import { ApiBearerAuth, ApiExtraModels, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiConsumes,
+    ApiExtraModels,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
 import { ResponseDto, Status } from 'src/domain/dtos/response_dto';
 import { User } from 'src/domain/models/user.model';
 import { Helpers } from 'src/core/helpers/helpers';
@@ -18,6 +28,8 @@ import { Constants, Strings } from 'src/core/constants/constants';
 import { UserEntity } from 'src/domain/entities/user_entity';
 import { UpdateUserProfileDTO } from 'src/domain/dtos/user/user_dto';
 import { AuthUser } from 'src/domain/auth_user_decorator';
+import { diskStorage } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 @UseGuards(AuthenticatedUserGuard)
@@ -49,9 +61,42 @@ export class UsersController {
 
     //update user profile route
     @Patch('/update-profile')
+    @UseInterceptors(
+        FileInterceptor(
+            'profilePic',
+
+            {
+                storage: diskStorage({
+                    destination: './uploads/',
+                    filename: (req, file, cb) => {
+                        // keep original name
+                        cb(null, file.originalname);
+                    },
+                }),
+                limits: { fileSize: 2 * 1024 * 1024, files: 1 }, // applies per file
+                dest: './uploads/',
+                fileFilter: (req, file, cb) => {
+                    if (file.mimetype.startsWith('image/')) {
+                        cb(null, true);
+                    } else {
+                        cb(
+                            new BadRequestException(
+                                `Only valid ${file.fieldname} files are allowed`,
+                            ),
+                            false,
+                        );
+                    }
+                },
+            },
+        ),
+    )
 
     //documentation
+    @ApiConsumes('multipart/form-data')
     @ApiOperation({})
+    @ApiBody({
+        type: UpdateUserProfileDTO,
+    })
     @ApiExtraModels(User)
     @ApiResponse({
         schema: {
@@ -62,8 +107,9 @@ export class UsersController {
     updateProfile(
         @AuthUser() user: UserEntity,
         @Body() dto: UpdateUserProfileDTO,
-    ): Promise<ResponseDto<User>> {
-        return this.usersService.updateUserProfile(user, dto);
+        @UploadedFile() profilePic?: Express.Multer.File,
+    ): Promise<ResponseDto<User | string>> {
+        return this.usersService.updateUserProfile(user, dto, profilePic);
     }
 
     //update user profile route
@@ -80,5 +126,31 @@ export class UsersController {
     })
     deleteProfile(@AuthUser() user: UserEntity): Promise<ResponseDto<string>> {
         return this.usersService.deleteUserAccount(user.id, true);
+    }
+
+    //Change user email
+    @Patch('/change-email')
+
+    //documentation
+    @ApiOperation({})
+    @ApiExtraModels(User)
+    @ApiBody({
+        schema: {
+            type: 'String',
+            example: {
+                name: 'email',
+            },
+        },
+    })
+    @ApiResponse({
+        schema: {
+            type: 'object',
+            properties: new Status().toDoc(Helpers.swaggerDocPath('User')),
+        },
+    })
+    changeEmail(@AuthUser() user: UserEntity, @Body() email: string): Promise<ResponseDto<User>> {
+        if (!email) throw new BadRequestException();
+
+        return this.usersService.changeEmail(user, email);
     }
 }

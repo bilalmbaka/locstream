@@ -66,7 +66,11 @@ export class AuthService {
             }
 
             if (user.emailVerified === false && user.role === UserRole.user) {
-                await this.sendOtp(user.email);
+                await this.sendOtp({
+                    existingUserEmail: user.email,
+                    receiverEmail: user.email,
+                    verifyEmail: true,
+                });
                 throw new ForbiddenException('Email not veirified');
             }
 
@@ -123,7 +127,11 @@ export class AuthService {
             }
 
             if (dto.role == UserRole.user) {
-                await this.sendOtp(dto.email);
+                await this.sendOtp({
+                    existingUserEmail: dto.email,
+                    receiverEmail: dto.email,
+                    verifyEmail: true,
+                });
             }
 
             return new Status<string>().success(Strings.successString, HttpStatus.OK);
@@ -132,23 +140,29 @@ export class AuthService {
         }
     }
 
-    async sendOtp(email: string): Promise<ResponseDto<string>> {
+    async sendOtp(dto: {
+        receiverEmail: string;
+        existingUserEmail: string;
+        verifyEmail: boolean;
+    }): Promise<ResponseDto<string>> {
         try {
-            const user = await this.userRepository.findOneBy({
-                email: email,
-            });
+            if (dto.verifyEmail === true) {
+                const user = await this.userRepository.findOneBy({
+                    email: dto.existingUserEmail,
+                });
 
-            //TODO return a generic mail sent to otp, to prevent account enumeration
-            if (!user) {
-                throw new BadRequestException('User not found');
+                //TODO return a generic mail sent to otp, to prevent account enumeration
+                if (!user) {
+                    throw new BadRequestException('User not found');
+                }
             }
 
-            const otp = this._generateOtp();
+            const otp = Helpers.generateOtp();
 
             //Update user otp data
             await this.userRepository.update(
                 {
-                    email,
+                    email: dto.existingUserEmail,
                 },
                 {
                     otp: otp,
@@ -157,7 +171,7 @@ export class AuthService {
             );
 
             this.emailService.sendMail({
-                to: email,
+                to: dto.receiverEmail,
                 subject: 'Your otp',
                 content: otp,
             });
@@ -342,17 +356,6 @@ export class AuthService {
         const hash = await bcrypt.hash(password, 10);
 
         return hash;
-    }
-
-    _generateOtp(): string {
-        let otp = '';
-        const source = '0123456789';
-
-        while (otp.length < 4) {
-            otp = `${otp}${source.charAt(Math.floor(Math.random() * source.length))}`;
-        }
-
-        return otp;
     }
 
     async _genAndSaveAuthToken(
