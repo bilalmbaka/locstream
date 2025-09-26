@@ -6,9 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccessTokenEntity } from 'src/domain/entities/access_token_entity';
 import { AuthTokenService } from 'src/core/services/token_service';
 
+
 @Module({
     imports: [TypeOrmModule.forFeature([UserEntity, AccessTokenEntity])],
     controllers: [ShareLocationController],
     providers: [ShareLocationService, AuthTokenService],
+    exports: [ShareLocationService],
 })
 export class ShareLocationModule {}

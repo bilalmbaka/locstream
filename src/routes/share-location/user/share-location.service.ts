@@ -5,7 +5,6 @@ import { DBExceptionHandler } from 'src/core/exception_handlers/db_exception_han
 import { CleanData } from 'src/core/helpers/clean_data';
 import { AuthUser } from 'src/domain/auth_user_decorator';
 import { ResponseDto, Status } from 'src/domain/dtos/response_dto';
-import { AccessTokenEntity } from 'src/domain/entities/access_token_entity';
 import { UserEntity } from 'src/domain/entities/user_entity';
 import { User } from 'src/domain/models/user.model';
 import { Repository } from 'typeorm';
@@ -15,8 +14,6 @@ export class ShareLocationService {
     constructor(
         @InjectRepository(UserEntity)
         private userController: Repository<UserEntity>,
-        @InjectRepository(AccessTokenEntity)
-        private accessTokenRepository: Repository<AccessTokenEntity>,
     ) {}
 
     async shareLocationWithUser(

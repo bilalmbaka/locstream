@@ -13,6 +13,7 @@ import { UsersModule } from './routes/users/user/users.module';
 import { AssetsModule } from './routes/assets/assets.module';
 import { UserLocationSubscriber } from './routes/share-location/user/location-subscriber';
 import { ShareLocationModule } from './routes/share-location/user/share-location.module';
+import { ShareLocationWebsocketGatewayModule } from './routes/share-location/share-location-websocket-gateway/share-location-websocket-gateway.module';
 
 @Module({
     imports: [
@@ -30,13 +31,13 @@ import { ShareLocationModule } from './routes/share-location/user/share-location
             ssl: false,
             namingStrategy: new SnakeNamingStrategy(),
             entities: [UserEntity, AccessTokenEntity, AssetsEntity],
-            subscribers: [UserLocationSubscriber],
         }),
         AuthModule,
         PriviledgeUserModule,
         UsersModule,
         AssetsModule,
         ShareLocationModule,
+        ShareLocationWebsocketGatewayModule,
     ],
     controllers: [AppController],
     providers: [AppService],
