@@ -28,7 +28,7 @@ export class AuthTokenService {
                 id: user.id,
             },
             this.configService.get<string>('JWT_SECRET'),
-            { expiresIn: '1d' },
+            { expiresIn: '1m' },
         );
 
         const refreshToken = jwt.sign(
@@ -36,7 +36,7 @@ export class AuthTokenService {
                 id: user.id,
             },
             this.configService.get<string>('JWT_SECRET'),
-            { expiresIn: '1m' },
+            { expiresIn: '90d' },
         );
 
         return {

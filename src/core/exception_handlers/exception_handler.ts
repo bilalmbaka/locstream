@@ -33,6 +33,8 @@ export class ExceptionHandler implements ExceptionFilter {
             httpStatus = responseBody.statusCode;
         }
 
+        console.log('Error response body', responseBody);
+
         httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
     }
 

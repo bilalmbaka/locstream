@@ -90,7 +90,7 @@ export class ShareLocationController {
                 },
             },
             example: {
-                name: Strings.exampleUUID,
+                userId: Strings.exampleUUID,
             },
         },
     })
@@ -132,7 +132,7 @@ export class ShareLocationController {
                 },
             },
             example: {
-                name: Strings.exampleUUID,
+                userId: Strings.exampleUUID,
             },
         },
     })
@@ -150,7 +150,7 @@ export class ShareLocationController {
     })
     stopLocationShare(
         @AuthUser() user: UserEntity,
-        @Body() userId: string,
+        @Body('userId') userId: string,
     ): Promise<ResponseDto<string>> {
         if (!userId) {
             throw new BadRequestException();

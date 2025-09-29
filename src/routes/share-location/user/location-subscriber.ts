@@ -17,7 +17,27 @@ export class UserLocationSubscriber implements EntitySubscriberInterface<UserEnt
         return UserEntity;
     }
 
+    //TypeORM gives you tools inside the UpdateEvent to check exactly what changed:
+    //     event.updatedColumns → list of columns that were updated
+
+    // event.updatedRelations → list of relations that were updated
+
+    // event.databaseEntity → the entity before the update (from the DB)
+
+    // event.entity → the new entity after the update
+
     afterUpdate(event: UpdateEvent<UserEntity>): void {
+        // Only react if location fields were updated
+        const updatedColumns = event.updatedColumns.map((c) => c.propertyName);
+
+        if (
+            !updatedColumns.includes('location') &&
+            !updatedColumns.includes('latitude') &&
+            !updatedColumns.includes('longitude')
+        ) {
+            return; // skip if location-related fields not changed
+        }
+
         this._fetchUserLocationSubscribers(event, event.entity!['id']!);
     }
 
