@@ -27,6 +27,9 @@ export class ShareLocationWebsocketGatewayGateway
     async handleConnection(@ConnectedSocket() client: Socket) {
         try {
             const token = client.handshake.headers['token'];
+
+            console.log('token for socket is ', token);
+
             if (!token) {
                 client.disconnect();
                 throw new WsException('Unauthorized');
@@ -44,7 +47,6 @@ export class ShareLocationWebsocketGatewayGateway
             );
         } catch (e) {
             console.log('Error connecting to socket', e);
-            throw new WsException('Error connecting');
         }
     }
 

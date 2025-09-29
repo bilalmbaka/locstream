@@ -94,7 +94,7 @@ export class UpdateUserProfileDTO {
         required: false,
     })
     @IsOptional()
-    currentLocation: string;
+    currentLocation: string | Object;
 }
 
 export class FindUserDTO {
@@ -137,4 +137,29 @@ export class FindUserDTO {
     @IsString()
     @IsOptional()
     id: string;
+}
+
+export class FindUserByUserNameDTO {
+    @ApiProperty({
+        example: 1,
+        required: false,
+    })
+    @IsString()
+    @IsOptional()
+    startAt: string;
+
+    @ApiProperty({
+        example: 20,
+        required: false,
+    })
+    @IsString()
+    @IsOptional()
+    endAt: string;
+
+    @ApiProperty({
+        example: Strings.exampleUserName,
+        required: false,
+    })
+    @IsString()
+    userName: string;
 }
