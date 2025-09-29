@@ -30,11 +30,9 @@ export class UserLocationSubscriber implements EntitySubscriberInterface<UserEnt
         // Only react if location fields were updated
         const updatedColumns = event.updatedColumns.map((c) => c.propertyName);
 
-        if (
-            !updatedColumns.includes('location') &&
-            !updatedColumns.includes('latitude') &&
-            !updatedColumns.includes('longitude')
-        ) {
+        console.log('updated columns', updatedColumns);
+
+        if (!updatedColumns.includes('currentLocation')) {
             return; // skip if location-related fields not changed
         }
 

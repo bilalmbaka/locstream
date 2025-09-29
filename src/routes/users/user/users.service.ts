@@ -128,7 +128,10 @@ export class UsersService {
                   };
 
             if (dto.currentLocation) {
-                currentLocation = JSON.parse(dto.currentLocation);
+                currentLocation =
+                    typeof dto.currentLocation === 'object'
+                        ? dto.currentLocation
+                        : JSON.parse(dto.currentLocation as string);
             }
 
             await this.userRepository.save(
