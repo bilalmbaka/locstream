@@ -22,6 +22,8 @@ export class CleanData {
                       lng: user.currentLocation.coordinates[0],
                   }
                 : undefined,
+            currentAddress: user.currentAddress,
+            lastSeen: user.lastSeen,
         };
     }
 

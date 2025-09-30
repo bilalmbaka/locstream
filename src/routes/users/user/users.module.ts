@@ -11,9 +11,10 @@ import { AuthService } from 'src/routes/auth/auth.service';
 import { EmailService } from 'src/core/services/mail_service';
 import { UserLocationSubscriber } from 'src/routes/share-location/user/location-subscriber';
 import { ConnectedUsersService } from 'src/routes/share-location/user/connected_users_service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([UserEntity, AccessTokenEntity, AssetsEntity])],
+    imports: [TypeOrmModule.forFeature([UserEntity, AccessTokenEntity, AssetsEntity]), HttpModule],
     controllers: [UsersController],
     providers: [
         UsersService,

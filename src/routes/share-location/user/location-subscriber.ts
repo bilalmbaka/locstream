@@ -18,7 +18,9 @@ export class UserLocationSubscriber implements EntitySubscriberInterface<UserEnt
     }
 
     afterUpdate(event: UpdateEvent<UserEntity>): void {
-        this._fetchUserLocationSubscribers(event, event.entity!['id']!);
+        if (event.entity?.currentLocation) {
+            this._fetchUserLocationSubscribers(event, event.entity!['id']!);
+        }
     }
 
     private async _fetchUserLocationSubscribers(
@@ -34,6 +36,8 @@ export class UserLocationSubscriber implements EntitySubscriberInterface<UserEnt
             if (profile == null) return [];
 
             const subscribers = profile.locationReceivers;
+
+            console.log('location receivers', subscribers);
 
             const sockets = subscribers.flatMap((subscriber) => {
                 //TODO check last seen for each subscriber if the user has not been seen for the past 3 hours send push notification to bring them

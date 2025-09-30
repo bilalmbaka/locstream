@@ -20,6 +20,8 @@ import { AuthUser } from 'src/domain/auth_user_decorator';
 import { AssetsService } from 'src/routes/assets/assets.service';
 import { AuthService } from 'src/routes/auth/auth.service';
 import { AssetsEntity } from 'src/domain/entities/assets_entity';
+import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class UsersService {
@@ -31,6 +33,8 @@ export class UsersService {
 
         private assetService: AssetsService,
         private authService: AuthService,
+        private httpService: HttpService,
+        private configService: ConfigService,
     ) {}
 
     async fetchUserById(userId: string, withDeleted: boolean = false): Promise<ResponseDto<User>> {
@@ -123,9 +127,14 @@ export class UsersService {
                       lat: number;
                       lng: number;
                   };
+            var address: string | undefined;
 
             if (dto.currentLocation) {
-                currentLocation = JSON.parse(dto.currentLocation);
+                currentLocation =
+                    typeof dto.currentLocation === 'object'
+                        ? dto.currentLocation
+                        : JSON.parse(dto.currentLocation as string);
+                address = await this._reverseGeoCode(currentLocation!.lat, currentLocation!.lng);
             }
 
             await this.userRepository.save(
@@ -137,6 +146,7 @@ export class UsersService {
                         type: 'Point',
                         coordinates: [currentLocation?.lng, currentLocation?.lat],
                     },
+                    currentAddress: address,
                 } as UserEntity,
                 {
                     listeners: dto.currentLocation ? true : false,
@@ -148,6 +158,36 @@ export class UsersService {
             return updatedProfile;
         } catch (e) {
             throw DBExceptionHandler.handleException(e);
+        }
+    }
+
+    private async _reverseGeoCode(lat: number, lng: number): Promise<string> {
+        try {
+            const api = await this.httpService.axiosRef.post(
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&location_type=ROOFTOP&key=${this.configService.get<string>('GOOGLE_MAPS_KEY')}`,
+                //  {
+                //      headers: {
+                //          'X-Goog-Api-Key': this.configService.get<string>('GOOGLE_MAPS_KEY'),
+                //          'X-Goog-FieldMask': this._defaultFieldMask,
+                //      },
+                //  },
+            );
+
+            const response = api.data;
+
+            if (response.status !== 'OK') {
+                throw response;
+            }
+
+            const results = response.results as { [key: string]: any }[];
+
+            if (results.length == 0) return '';
+
+            return results[0]['formatted_address'];
+        } catch (e) {
+            console.log('Error reverse geocoding position', e);
+
+            return '';
         }
     }
 
@@ -185,31 +225,28 @@ export class UsersService {
         }
     }
 
-
     async checkUserNameAvailability(username: string): Promise<ResponseDto<boolean>> {
         try {
             if (username.length < 5) {
-                throw new BadRequestException("Username too short");
+                throw new BadRequestException('Username too short');
             }
 
             const regex = /^[a-zA-Z0-9]+$/; // only letters and numbers
 
-  if (!regex.test(username)) {
-     throw new BadRequestException("Username must contain only letters and numbers");
-  }
+            if (!regex.test(username)) {
+                throw new BadRequestException('Username must contain only letters and numbers');
+            }
 
-
-             const userData = await this.userRepository.findOneBy({
+            const userData = await this.userRepository.findOneBy({
                 userName: username.trim().toLowerCase(),
             });
 
-            console.log("userdata", userData);
+            console.log('userdata', userData);
 
             if (userData) throw new ConflictException();
 
-            return new Status<boolean>().success("Username available",HttpStatus.OK);
-
-        }catch(e) {
+            return new Status<boolean>().success('Username available', HttpStatus.OK);
+        } catch (e) {
             throw DBExceptionHandler.handleException(e);
         }
     }
