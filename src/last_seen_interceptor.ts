@@ -18,15 +18,13 @@ export class LastSeenInterceptor implements NestInterceptor {
         // 🔑 Do your logic here (e.g. update last_seen in DB)
         // If request.user is set by AuthGuard, you can use it
         if (request.user) {
+            console.log('last seen logged at', new Date().toISOString());
+
             this.userRepository.update(request.user.id, {
                 lastSeen: new Date(),
             });
         }
 
-        return next.handle().pipe(
-            tap(() => {
-                console.log('last seen logged at', new Date().toISOString());
-            }),
-        );
+        return next.handle();
     }
 }
