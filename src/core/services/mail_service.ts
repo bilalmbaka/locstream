@@ -28,6 +28,13 @@ export class EmailService {
 
     async sendMail(dto: EmailDTO): Promise<void> {
         try {
+            console.log(
+                'Sending mil to ',
+                dto.to,
+                this.configService.get<string>('EMAIL_USER'),
+                this.configService.get<string>('EMAIL_PASSWORD'),
+            );
+
             await this.transporter.sendMail({
                 from: {
                     name: this.configService.get<string>('EMAIL_SENDER'),
