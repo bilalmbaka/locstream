@@ -49,10 +49,10 @@ export class AuthService {
             const user = await this.userRepository.findOne({
                 where: [
                     {
-                        email: dto.email?.trim(),
+                        email: dto.email?.trim().toLowerCase(),
                     },
                     {
-                        userName: dto.userName?.trim(),
+                        userName: dto.userName?.trim().toLowerCase(),
                     },
                 ],
             });
@@ -98,7 +98,7 @@ export class AuthService {
         try {
             const user = await this.userRepository.findOne({
                 where: [
-                    { email: dto.email.toLocaleLowerCase() },
+                    { email: dto.email.toLowerCase() },
                     // { userName: dto.userName.toLocaleLowerCase() },
                 ],
                 withDeleted: true,
@@ -119,7 +119,7 @@ export class AuthService {
 
             if (!user) {
                 await this.userRepository.save({
-                    email: dto.email,
+                    email: dto.email.toLowerCase(),
                     // userName: dto.userName,
                     password: await this._hashPassword(dto.password),
                     role: dto.role ? dto.role : UserRole.user,
@@ -149,7 +149,7 @@ export class AuthService {
             if (dto.verifyEmail === true) {
                 const user = await this.userRepository.findOne({
                     where: {
-                        email: dto.existingUserEmail,
+                        email: dto.existingUserEmail.toLowerCase(),
                     },
                     withDeleted: true,
                 });
@@ -165,7 +165,7 @@ export class AuthService {
             //Update user otp data
             await this.userRepository.update(
                 {
-                    email: dto.existingUserEmail,
+                    email: dto.existingUserEmail.toLowerCase(),
                 },
                 {
                     otp: otp,
@@ -174,7 +174,7 @@ export class AuthService {
             );
 
             this.emailService.sendMail({
-                to: dto.receiverEmail,
+                to: dto.receiverEmail.toLowerCase(),
                 subject: 'Your otp',
                 content: otp,
             });
@@ -189,7 +189,7 @@ export class AuthService {
         try {
             const user = await this.userRepository.findOneOrFail({
                 where: {
-                    email: dto.email,
+                    email: dto.email.toLowerCase(),
                 },
                 withDeleted: true,
             });
@@ -212,7 +212,7 @@ export class AuthService {
 
             if (user.deletedAt) {
                 await this.userRepository.restore({
-                    email: user.email,
+                    email: user.email.toLowerCase(),
                 });
             }
 
@@ -225,7 +225,7 @@ export class AuthService {
 
             await this.userRepository.update(
                 {
-                    email: user.email,
+                    email: user.email.toLowerCase(),
                 },
                 {
                     emailVerified: true,
@@ -241,7 +241,7 @@ export class AuthService {
     async resetPassword(dto: ResetPasswordDTO): Promise<ResponseDto<string>> {
         try {
             const user = await this.userRepository.findOneByOrFail({
-                email: dto.email,
+                email: dto.email.toLowerCase(),
             });
 
             if (user?.role != UserRole.user) {
@@ -264,7 +264,7 @@ export class AuthService {
 
             await this.userRepository.update(
                 {
-                    email: user.email,
+                    email: user.email.toLowerCase(),
                 },
                 {
                     emailVerified: true,
