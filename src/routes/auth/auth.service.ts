@@ -149,13 +149,10 @@ export class AuthService {
             if (dto.verifyEmail === true) {
                 const user = await this.userRepository.findOne({
                     where: {
-                                            email: dto.existingUserEmail,
-
+                        email: dto.existingUserEmail,
                     },
-                                                        withDeleted: true,
-
-
-                },);
+                    withDeleted: true,
+                });
 
                 //TODO return a generic mail sent to otp, to prevent account enumeration
                 if (!user) {
@@ -192,9 +189,9 @@ export class AuthService {
         try {
             const user = await this.userRepository.findOneOrFail({
                 where: {
-                                    email: dto.email,
-
-                },withDeleted: true
+                    email: dto.email,
+                },
+                withDeleted: true,
             });
 
             if (user?.role != UserRole.user) {
@@ -215,7 +212,7 @@ export class AuthService {
 
             if (user.deletedAt) {
                 await this.userRepository.restore({
-                    email: user.email
+                    email: user.email,
                 });
             }
 
@@ -322,14 +319,17 @@ export class AuthService {
                 },
             });
 
-            console.log('token is', token);
-
             const newTokens = this.authTokenService.generateFreshTokens(token.user);
 
-            await this.accessTokenRepository.update(token, {
-                accessToken: newTokens.accessToken,
-                refreshToken: newTokens.refreshToken,
-            });
+            await this.accessTokenRepository.update(
+                {
+                    refreshToken: refreshToken,
+                },
+                {
+                    accessToken: newTokens.accessToken,
+                    refreshToken: newTokens.refreshToken,
+                },
+            );
 
             return new Status<TokenModel>().success(
                 Strings.successString,

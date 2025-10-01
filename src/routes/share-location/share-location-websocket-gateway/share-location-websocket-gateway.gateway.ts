@@ -36,6 +36,8 @@ export class ShareLocationWebsocketGatewayGateway
                 token as string,
             );
 
+            console.log('user profile is', user);
+
             this.connectedUsersService.addUser(user.id, client);
 
             client.emit(
