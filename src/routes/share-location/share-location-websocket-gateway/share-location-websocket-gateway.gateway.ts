@@ -13,7 +13,7 @@ import { SocketGuard } from 'src/guards/socket_guard';
 import { CleanData } from 'src/core/helpers/clean_data';
 import { ConnectedUsersService } from '../user/connected_users_service';
 
-@WebSocketGateway({ transports: ['websocket'] })
+@WebSocketGateway({ transports: ['websocket'], cors: { origin: '*' } }) // namespace: '/chat'
 export class ShareLocationWebsocketGatewayGateway
     implements OnGatewayConnection, OnGatewayDisconnect
 {
