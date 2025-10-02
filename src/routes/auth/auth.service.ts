@@ -55,6 +55,7 @@ export class AuthService {
                         userName: dto.userName?.trim().toLowerCase(),
                     },
                 ],
+                relations: ['profilePicture'],
             });
 
             if (!user) {

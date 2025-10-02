@@ -7,7 +7,7 @@ import {
     WsException,
 } from '@nestjs/websockets';
 import { ShareLocationWebsocketGatewayService } from './share-location-websocket-gateway.service';
-import { ArgumentsHost, Catch, UseFilters, UseGuards } from '@nestjs/common';
+import { ArgumentsHost, Catch, UseGuards } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Constants } from 'src/core/constants/constants';
 import { SocketGuard } from 'src/guards/socket_guard';
@@ -45,7 +45,7 @@ export class ShareLocationWebsocketGatewayGateway
                 token as string,
             );
 
-            console.log('user profile is', user);
+            // console.log('user profile is', user);
 
             this.connectedUsersService.addUser(user.id, client);
 
