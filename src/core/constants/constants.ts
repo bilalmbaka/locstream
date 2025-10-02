@@ -20,4 +20,5 @@ export class Constants {
     static locationReceivers = 'locationReceivers';
     static locationSharers = 'locationSharers';
     static locationChanged = 'locationChange';
+    static errorMessageEvent = 'errorMessage';
 }

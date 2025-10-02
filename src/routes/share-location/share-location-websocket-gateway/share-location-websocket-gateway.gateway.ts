@@ -1,4 +1,5 @@
 import {
+    BaseWsExceptionFilter,
     ConnectedSocket,
     OnGatewayConnection,
     OnGatewayDisconnect,
@@ -6,14 +7,21 @@ import {
     WsException,
 } from '@nestjs/websockets';
 import { ShareLocationWebsocketGatewayService } from './share-location-websocket-gateway.service';
-import { UseGuards } from '@nestjs/common';
+import { ArgumentsHost, Catch, UseFilters, UseGuards } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { Constants } from 'src/core/constants/constants';
 import { SocketGuard } from 'src/guards/socket_guard';
 import { CleanData } from 'src/core/helpers/clean_data';
 import { ConnectedUsersService } from '../user/connected_users_service';
 
-@WebSocketGateway({ transports: ['websocket'], cors: { origin: '*' } }) // namespace: '/chat'
+@Catch()
+export class AllExceptionsFilter extends BaseWsExceptionFilter {
+    catch(exception: unknown, host: ArgumentsHost) {
+        super.catch(exception, host);
+    }
+}
+
+@WebSocketGateway({ transports: ['websocket'], cors: { origin: '*' } })
 export class ShareLocationWebsocketGatewayGateway
     implements OnGatewayConnection, OnGatewayDisconnect
 {
@@ -28,6 +36,7 @@ export class ShareLocationWebsocketGatewayGateway
         try {
             const token = client.handshake.headers['token'];
             if (!token) {
+                client.emit(Constants.errorMessageEvent, `Unauthorized`);
                 client.disconnect();
                 throw new WsException('Unauthorized');
             }
@@ -45,8 +54,7 @@ export class ShareLocationWebsocketGatewayGateway
                 user.sharedLocations.map((user) => CleanData.cleanUser(user)),
             );
         } catch (e) {
-            console.log('Error connecting to socket', e);
-            throw new WsException('Error connecting');
+            client.disconnect(true);
         }
     }
 
