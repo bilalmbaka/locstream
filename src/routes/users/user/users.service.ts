@@ -130,6 +130,8 @@ export class UsersService {
             var address: string | undefined;
 
             if (dto.currentLocation) {
+                console.log(user.userName, 'updated their location', dto.currentLocation);
+
                 currentLocation =
                     typeof dto.currentLocation === 'object'
                         ? dto.currentLocation

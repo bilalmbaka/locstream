@@ -15,6 +15,8 @@ import { ShareLocationModule } from './routes/share-location/user/share-location
 import { ShareLocationWebsocketGatewayModule } from './routes/share-location/share-location-websocket-gateway/share-location-websocket-gateway.module';
 import { LastSeenInterceptor } from './last_seen_interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { CustomerSupportEntity } from './domain/entities/customer_support_entity';
+import { CustomerSupportModule } from './routes/customer-support/customer-support.module';
 
 @Module({
     imports: [
@@ -31,7 +33,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
             synchronize: true,
             ssl: false,
             namingStrategy: new SnakeNamingStrategy(),
-            entities: [UserEntity, AccessTokenEntity, AssetsEntity],
+            entities: [UserEntity, AccessTokenEntity, AssetsEntity, CustomerSupportEntity],
         }),
         TypeOrmModule.forFeature([UserEntity]),
 
@@ -41,6 +43,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
         AssetsModule,
         ShareLocationModule,
         ShareLocationWebsocketGatewayModule,
+        CustomerSupportModule,
     ],
     controllers: [AppController],
     providers: [

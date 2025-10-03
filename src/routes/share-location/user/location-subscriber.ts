@@ -37,7 +37,7 @@ export class UserLocationSubscriber implements EntitySubscriberInterface<UserEnt
 
             const subscribers = profile.locationReceivers;
 
-            console.log('location receivers', subscribers);
+            // console.log('location receivers', subscribers);
 
             const sockets = subscribers.flatMap((subscriber) => {
                 //TODO check last seen for each subscriber if the user has not been seen for the past 3 hours send push notification to bring them
