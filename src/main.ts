@@ -71,7 +71,7 @@ async function bootstrap() {
         console.log(`Documentation running on ${baseUrl}/docs`);
     });
 
-    const cronJob = cron.schedule('* 1 * * * *', async () => {
+    const cronJob = cron.schedule('*/60 * * * * *', async () => {
         try {
             const response = await axios.get('https://locstream.onrender.com/');
             console.log('cron running ', response.data);
