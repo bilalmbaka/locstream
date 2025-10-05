@@ -35,7 +35,7 @@ export class AuthTokenService {
             {
                 id: user.id,
             },
-            this.configService.get<string>('JWT_SECRET'),
+            this.configService.get<string>('JWT_REFRESH_SECRET'),
             { expiresIn: '90d' },
         );
 
