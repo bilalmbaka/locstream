@@ -6,10 +6,18 @@ import { ExceptionHandler } from './core/exception_handlers/exception_handler';
 import { Status } from './domain/dtos/response_dto';
 import { Constants, Strings } from './core/constants/constants';
 import { v2 as cloudinary } from 'cloudinary';
+import cron, { ScheduledTask } from 'node-cron';
+import axios, { AxiosError } from 'axios';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
-    app.enableCors({});
+
+    app.enableCors({
+        origin: (origin, callback) => {
+            return callback(null, true);
+        },
+    });
+
     app.useGlobalPipes(new ValidationPipe());
 
     const config = new DocumentBuilder()
@@ -62,6 +70,19 @@ async function bootstrap() {
         console.log(`Server running on port ${baseUrl}`);
         console.log(`Documentation running on ${baseUrl}/docs`);
     });
+
+    // const cronJob = cron.schedule('*/5 * * * * *', async () => {
+    //     try {
+    //         const response = await axios.get('https://locstream.onrender.com/');
+    //         console.log('cron running ', response.data);
+    //     } catch (e) {
+    //         const error = e as AxiosError;
+
+    //         console.log('error in cron job', error.message);
+    //     }
+    // });
+
+    // console.log('cron initialized with id', cronJob.id);
 }
 
 bootstrap();
