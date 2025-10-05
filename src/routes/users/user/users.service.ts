@@ -11,11 +11,11 @@ import { Strings } from 'src/core/constants/constants';
 import { DBExceptionHandler } from 'src/core/exception_handlers/db_exception_handler';
 import { CleanData } from 'src/core/helpers/clean_data';
 import { ResponseDto, Status } from 'src/domain/dtos/response_dto';
-import { UpdateUserProfileDTO } from 'src/domain/dtos/user/user_dto';
+import { FindUserByUserNameDTO, UpdateUserProfileDTO } from 'src/domain/dtos/user/user_dto';
 import { AccessTokenEntity } from 'src/domain/entities/access_token_entity';
 import { UserEntity } from 'src/domain/entities/user_entity';
 import { User } from 'src/domain/models/user.model';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { AuthUser } from 'src/domain/auth_user_decorator';
 import { AssetsService } from 'src/routes/assets/assets.service';
 import { AuthService } from 'src/routes/auth/auth.service';
@@ -231,6 +231,7 @@ export class UsersService {
         try {
             if (username.length < 5) {
                 throw new BadRequestException('Username too short');
+                throw new BadRequestException('Username too short');
             }
 
             const regex = /^[a-zA-Z0-9]+$/; // only letters and numbers
@@ -238,11 +239,16 @@ export class UsersService {
             if (!regex.test(username)) {
                 throw new BadRequestException('Username must contain only letters and numbers');
             }
+            if (!regex.test(username)) {
+                throw new BadRequestException('Username must contain only letters and numbers');
+            }
 
+            const userData = await this.userRepository.findOneBy({
             const userData = await this.userRepository.findOneBy({
                 userName: username.trim().toLowerCase(),
             });
 
+            console.log('userdata', userData);
             console.log('userdata', userData);
 
             if (userData) throw new ConflictException();

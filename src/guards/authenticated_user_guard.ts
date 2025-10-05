@@ -32,7 +32,7 @@ export class AuthenticatedUserGuard implements CanActivate {
 
             const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
-            const decoded = this.authTokenService.decode(token);
+            // const decoded = this.authTokenService.decode(token);
 
             if (this.authTokenService.hasExpired(token)) {
                 throw new ForbiddenException('Token has expired');
@@ -49,6 +49,8 @@ export class AuthenticatedUserGuard implements CanActivate {
                 },
                 order: {},
             });
+
+            // console.log('in auth guard', authenticatedUser);
 
             if (!authenticatedUser || authenticatedUser.user.emailVerified == false) {
                 throw new ForbiddenException('User not found');
@@ -67,8 +69,6 @@ export class AuthenticatedUserGuard implements CanActivate {
 
             return true;
         } catch (e) {
-            console.log('Error in auth guard', e);
-
             if (e instanceof TokenExpiredError) {
                 throw new ForbiddenException('Token has expired');
             }

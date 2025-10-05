@@ -5,13 +5,11 @@ import {
     HttpStatus,
     Injectable,
     InternalServerErrorException,
-    NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CleanData } from 'src/core/helpers/clean_data';
 import {
-    ChangePasswordDTO,
     LoginDTO,
     ResetPasswordDTO,
     SignupDTO,
@@ -28,7 +26,6 @@ import { AuthTokenService } from 'src/core/services/token_service';
 import { AccessTokenEntity } from 'src/domain/entities/access_token_entity';
 import { UserRole } from 'src/core/constants/enums';
 import { DBExceptionHandler } from 'src/core/exception_handlers/db_exception_handler';
-import { AuthUser } from 'src/domain/auth_user_decorator';
 import { Helpers } from 'src/core/helpers/helpers';
 
 @Injectable()
@@ -152,6 +149,8 @@ export class AuthService {
                     where: {
                         email: dto.existingUserEmail.toLowerCase(),
                     },
+                    withDeleted: true,
+                });
                     withDeleted: true,
                 });
 
@@ -279,38 +278,10 @@ export class AuthService {
         }
     }
 
-    async changePassword(
-        dto: ChangePasswordDTO,
-        @AuthUser() user: UserEntity,
-    ): Promise<ResponseDto<string>> {
-        try {
-            console.log('user is ', user);
-            console.log('user is ', dto.oldPassword);
-            console.log('new user pass', user.password);
-
-            if ((await bcrypt.compare(dto.oldPassword, user.password)) == false) {
-                throw new UnauthorizedException('current password does not match');
-            }
-
-            const hashedPassword = await this._hashPassword(dto.newPassword);
-
-            await this.userRepository.update(
-                {
-                    id: user.id,
-                },
-                {
-                    password: hashedPassword,
-                },
-            );
-
-            return new Status<string>().success(Strings.successString, HttpStatus.OK);
-        } catch (e) {
-            throw DBExceptionHandler.handleException(e);
-        }
-    }
-
     async refreshToken(refreshToken: string): Promise<ResponseDto<TokenModel>> {
         try {
+            console.log('in refresh token token is', refreshToken);
+
             const token = await this.accessTokenRepository.findOneOrFail({
                 where: {
                     refreshToken: refreshToken,
@@ -397,5 +368,19 @@ export class AuthService {
         } as AccessTokenEntity);
 
         return cleanUser;
+    }
+
+    async logout(accessToken: string, userId: string): Promise<ResponseDto<string>> {
+        try {
+            const token = accessToken.substring(7);
+
+            await this.accessTokenRepository.delete({
+                accessToken: token,
+            });
+
+            return new Status<string>().success(Strings.successString, HttpStatus.OK);
+        } catch (e) {
+            throw DBExceptionHandler.handleException(e);
+        }
     }
 }

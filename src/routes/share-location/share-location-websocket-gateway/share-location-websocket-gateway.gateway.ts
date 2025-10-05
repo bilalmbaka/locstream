@@ -35,6 +35,9 @@ export class ShareLocationWebsocketGatewayGateway
     async handleConnection(@ConnectedSocket() client: Socket) {
         try {
             const token = client.handshake.headers['token'];
+
+            console.log('token for socket is ', token);
+
             if (!token) {
                 client.emit(Constants.errorMessageEvent, `Unauthorized`);
                 client.disconnect();

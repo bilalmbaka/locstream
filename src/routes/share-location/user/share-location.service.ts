@@ -46,6 +46,8 @@ export class ShareLocationService {
                 throw new InternalServerErrorException('Cannot listen to youself');
             }
 
+            console.log('other receier id', otherPartyId);
+
             await this.userController
                 .createQueryBuilder()
                 .relation(UserEntity, 'locationReceivers')

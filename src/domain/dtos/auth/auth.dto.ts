@@ -8,7 +8,7 @@ export class LoginDTO {
         example: Strings.exampleEmail,
         required: false,
     })
-    @IsEmail()
+    @IsString()
     @IsOptional()
     email?: string;
 
