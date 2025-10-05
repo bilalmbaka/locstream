@@ -4,7 +4,6 @@ import {
     Controller,
     Delete,
     Get,
-    HttpCode,
     HttpStatus,
     Param,
     Patch,
@@ -29,15 +28,10 @@ import { User } from 'src/domain/models/user.model';
 import { Helpers } from 'src/core/helpers/helpers';
 import { Constants, Strings } from 'src/core/constants/constants';
 import { UserEntity } from 'src/domain/entities/user_entity';
-import {
-    FindUserByUserNameDTO,
-    FindUserDTO,
-    UpdateUserProfileDTO,
-} from 'src/domain/dtos/user/user_dto';
+import { UpdateUserProfileDTO } from 'src/domain/dtos/user/user_dto';
 import { AuthUser } from 'src/domain/auth_user_decorator';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ChangePasswordDTO } from 'src/domain/dtos/auth/auth.dto';
 
 @Controller('user')
 @UseGuards(AuthenticatedUserGuard)
@@ -179,60 +173,5 @@ export class UsersController {
         if (!userName) throw new BadRequestException();
 
         return this.usersService.checkUserNameAvailability(userName);
-    }
-
-    //Change password route
-    @Patch('change-password')
-    @HttpCode(HttpStatus.OK)
-
-    //Documentation
-    @ApiBearerAuth(Constants.swaggerBearerAuth)
-    @ApiOperation({
-        description: 'Change password',
-    })
-    @ApiExtraModels(ChangePasswordDTO)
-    @ApiResponse({
-        schema: {
-            type: 'object',
-            properties: new Status<string>().toDoc(
-                undefined,
-                Strings.successString,
-                HttpStatus.OK,
-                undefined,
-                true,
-            ),
-        },
-    })
-    changePassword(
-        @Body() dto: ChangePasswordDTO,
-        @AuthUser() user: UserEntity,
-    ): Promise<ResponseDto<string>> {
-        return this.usersService.changePassword(dto, user);
-    }
-
-    //find users route
-    @Get('/find')
-
-    //documentation
-    @ApiOperation({
-        description: '',
-    })
-    @ApiResponse({
-        schema: {
-            type: 'object',
-            properties: new Status().toDoc(
-                Helpers.swaggerDocPath('User'),
-                undefined,
-                undefined,
-                'arrray',
-            ),
-        },
-    })
-    find(
-        @Query() dto: FindUserByUserNameDTO,
-    ): Promise<ResponseDto<User[]>> {
-        Helpers.validatePagination(dto.startAt, dto.endAt);
-
-        return this.usersService.findUsers(dto);
     }
 }

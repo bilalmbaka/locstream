@@ -27,16 +27,9 @@ export class UserLocationSubscriber implements EntitySubscriberInterface<UserEnt
     // event.entity → the new entity after the update
 
     afterUpdate(event: UpdateEvent<UserEntity>): void {
-        // Only react if location fields were updated
-        const updatedColumns = event.updatedColumns.map((c) => c.propertyName);
-
-        console.log('updated columns', updatedColumns);
-
-        if (!updatedColumns.includes('currentLocation')) {
-            return; // skip if location-related fields not changed
+        if (event.entity?.currentLocation) {
+            this._fetchUserLocationSubscribers(event, event.entity!['id']!);
         }
-
-        this._fetchUserLocationSubscribers(event, event.entity!['id']!);
     }
 
     private async _fetchUserLocationSubscribers(
@@ -52,6 +45,8 @@ export class UserLocationSubscriber implements EntitySubscriberInterface<UserEnt
             if (profile == null) return [];
 
             const subscribers = profile.locationReceivers;
+
+            // console.log('location receivers', subscribers);
 
             const sockets = subscribers.flatMap((subscriber) => {
                 //TODO check last seen for each subscriber if the user has not been seen for the past 3 hours send push notification to bring them

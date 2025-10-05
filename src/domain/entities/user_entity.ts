@@ -13,7 +13,7 @@ export class UserEntity extends GeneralEntity {
 
     @Column({
         unique: true,
-        nullable: true
+        nullable: true,
     })
     userName?: string;
 
@@ -61,6 +61,11 @@ export class UserEntity extends GeneralEntity {
     })
     currentLocation: Point;
 
+    @Column({
+        nullable: true,
+    })
+    currentAddress: string;
+
     @OneToOne(() => AssetsEntity, {
         nullable: true,
     })
@@ -76,5 +81,11 @@ export class UserEntity extends GeneralEntity {
     @ManyToMany(() => UserEntity, (user) => user.locationReceivers)
     sharedLocations: UserEntity[];
 
-    distance: number
+    @Column({
+        type: 'timestamptz',
+        nullable: true,
+    })
+    lastSeen?: Date;
+
+    distance: number;
 }

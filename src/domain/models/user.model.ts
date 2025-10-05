@@ -59,6 +59,11 @@ export class User {
     @IsOptional()
     updatedAt: Date;
 
+    @ApiProperty()
+    @IsDate()
+    @IsOptional()
+    lastSeen?: Date;
+
     @ApiProperty({
         enum: UserRole,
     })
@@ -73,6 +78,11 @@ export class User {
         lat: number;
         lng: number;
     };
+
+    @ApiProperty({})
+    @IsString()
+    @IsOptional()
+    currentAddress?: string;
 
     @ApiProperty()
     @IsOptional()

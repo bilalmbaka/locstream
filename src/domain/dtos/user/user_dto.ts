@@ -94,7 +94,7 @@ export class UpdateUserProfileDTO {
         required: false,
     })
     @IsOptional()
-    currentLocation: string | Object;
+    currentLocation: object | string;
 }
 
 export class FindUserDTO {

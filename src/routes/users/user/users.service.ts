@@ -11,18 +11,17 @@ import { Strings } from 'src/core/constants/constants';
 import { DBExceptionHandler } from 'src/core/exception_handlers/db_exception_handler';
 import { CleanData } from 'src/core/helpers/clean_data';
 import { ResponseDto, Status } from 'src/domain/dtos/response_dto';
-import { FindUserByUserNameDTO, UpdateUserProfileDTO } from 'src/domain/dtos/user/user_dto';
+import { UpdateUserProfileDTO } from 'src/domain/dtos/user/user_dto';
 import { AccessTokenEntity } from 'src/domain/entities/access_token_entity';
 import { UserEntity } from 'src/domain/entities/user_entity';
 import { User } from 'src/domain/models/user.model';
-import { ILike, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AuthUser } from 'src/domain/auth_user_decorator';
 import { AssetsService } from 'src/routes/assets/assets.service';
 import { AuthService } from 'src/routes/auth/auth.service';
 import { AssetsEntity } from 'src/domain/entities/assets_entity';
-import * as bcrypt from 'bcrypt';
-import { ChangePasswordDTO } from 'src/domain/dtos/auth/auth.dto';
-import { UserRole } from 'src/core/constants/enums';
+import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class UsersService {
@@ -34,6 +33,8 @@ export class UsersService {
 
         private assetService: AssetsService,
         private authService: AuthService,
+        private httpService: HttpService,
+        private configService: ConfigService,
     ) {}
 
     async fetchUserById(userId: string, withDeleted: boolean = false): Promise<ResponseDto<User>> {
@@ -126,12 +127,16 @@ export class UsersService {
                       lat: number;
                       lng: number;
                   };
+            var address: string | undefined;
 
             if (dto.currentLocation) {
+                console.log(user.userName, 'updated their location', dto.currentLocation);
+
                 currentLocation =
                     typeof dto.currentLocation === 'object'
                         ? dto.currentLocation
                         : JSON.parse(dto.currentLocation as string);
+                address = await this._reverseGeoCode(currentLocation!.lat, currentLocation!.lng);
             }
 
             await this.userRepository.save(
@@ -143,6 +148,7 @@ export class UsersService {
                         type: 'Point',
                         coordinates: [currentLocation?.lng, currentLocation?.lat],
                     },
+                    currentAddress: address,
                 } as UserEntity,
                 {
                     listeners: dto.currentLocation ? true : false,
@@ -154,6 +160,36 @@ export class UsersService {
             return updatedProfile;
         } catch (e) {
             throw DBExceptionHandler.handleException(e);
+        }
+    }
+
+    private async _reverseGeoCode(lat: number, lng: number): Promise<string> {
+        try {
+            const api = await this.httpService.axiosRef.post(
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&location_type=ROOFTOP&key=${this.configService.get<string>('GOOGLE_MAPS_KEY')}`,
+                //  {
+                //      headers: {
+                //          'X-Goog-Api-Key': this.configService.get<string>('GOOGLE_MAPS_KEY'),
+                //          'X-Goog-FieldMask': this._defaultFieldMask,
+                //      },
+                //  },
+            );
+
+            const response = api.data;
+
+            if (response.status !== 'OK') {
+                throw response;
+            }
+
+            const results = response.results as { [key: string]: any }[];
+
+            if (results.length == 0) return '';
+
+            return results[0]['formatted_address'];
+        } catch (e) {
+            console.log('Error reverse geocoding position', e);
+
+            return '';
         }
     }
 
@@ -202,88 +238,20 @@ export class UsersService {
             if (!regex.test(username)) {
                 throw new BadRequestException('Username must contain only letters and numbers');
             }
+            if (!regex.test(username)) {
+                throw new BadRequestException('Username must contain only letters and numbers');
+            }
 
             const userData = await this.userRepository.findOneBy({
                 userName: username.trim().toLowerCase(),
             });
 
             console.log('userdata', userData);
+            console.log('userdata', userData);
 
             if (userData) throw new ConflictException();
 
             return new Status<boolean>().success('Username available', HttpStatus.OK);
-        } catch (e) {
-            throw DBExceptionHandler.handleException(e);
-        }
-    }
-
-    async changePassword(
-        dto: ChangePasswordDTO,
-        @AuthUser() user: UserEntity,
-    ): Promise<ResponseDto<string>> {
-        try {
-            console.log('user is ', user);
-            console.log('user is ', dto.oldPassword);
-            console.log('new user pass', user.password);
-
-            if ((await bcrypt.compare(dto.oldPassword, user.password)) == false) {
-                throw new UnauthorizedException('current password does not match');
-            }
-
-            const hashedPassword = await await bcrypt.hash(dto.newPassword, 10);
-
-            await this.userRepository.update(
-                {
-                    id: user.id,
-                },
-                {
-                    password: hashedPassword,
-                },
-            );
-
-            return new Status<string>().success(Strings.successString, HttpStatus.OK);
-        } catch (e) {
-            throw DBExceptionHandler.handleException(e);
-        }
-    }
-
-    async findUsers(dto: FindUserByUserNameDTO): Promise<ResponseDto<User[]>> {
-        try {
-            var whereObject = {};
-            const where: any[] = [];
-
-            if (dto.userName) {
-                where.push({ userName: ILike(`%${dto.userName}%`) });
-            }
-
-            if (where.length > 0) {
-                whereObject = { ...where };
-            }
-
-            console.log('where objects', where);
-
-            const users = await this.userRepository.find({
-                where: { userName: ILike(`%${dto.userName}%`) },
-                skip: Number(dto.startAt ?? '0'),
-                take: Number(dto.endAt ?? '20'),
-                order: {
-                    userName: 'ASC',
-                },
-            });
-
-            console.log('user is ', users);
-
-            const cleanUsers = users.map((user) => {
-                user.role = UserRole.user;
-                user.currentLocation = {
-                    type: 'Point',
-                    coordinates: [0, 0],
-                };
-
-                return CleanData.cleanUser(user);
-            });
-
-            return new Status<User[]>().success(Strings.successString, HttpStatus.OK, cleanUsers);
         } catch (e) {
             throw DBExceptionHandler.handleException(e);
         }

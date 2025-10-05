@@ -107,8 +107,12 @@ export class ShareLocationService {
                     'sharer.currentLocation',
                     'sharer.createdAt',
                     'sharer.updatedAt',
+                    'sharer.lastSeen',
+                    'sharer.currentAddress',
                 ])
                 .getOne();
+
+            console.log('user profile all locations ', userWithReceivers);
 
             return new Status<User[]>().success(
                 Strings.successString,

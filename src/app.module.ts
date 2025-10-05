@@ -11,9 +11,12 @@ import { AuthModule } from './routes/auth/auth.module';
 import { PriviledgeUserModule } from './routes/users/admin/admin_user.module';
 import { UsersModule } from './routes/users/user/users.module';
 import { AssetsModule } from './routes/assets/assets.module';
-import { UserLocationSubscriber } from './routes/share-location/user/location-subscriber';
 import { ShareLocationModule } from './routes/share-location/user/share-location.module';
 import { ShareLocationWebsocketGatewayModule } from './routes/share-location/share-location-websocket-gateway/share-location-websocket-gateway.module';
+import { LastSeenInterceptor } from './last_seen_interceptor';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { CustomerSupportEntity } from './domain/entities/customer_support_entity';
+import { CustomerSupportModule } from './routes/customer-support/customer-support.module';
 
 @Module({
     imports: [
@@ -30,16 +33,25 @@ import { ShareLocationWebsocketGatewayModule } from './routes/share-location/sha
             synchronize: true,
             ssl: false,
             namingStrategy: new SnakeNamingStrategy(),
-            entities: [UserEntity, AccessTokenEntity, AssetsEntity],
+            entities: [UserEntity, AccessTokenEntity, AssetsEntity, CustomerSupportEntity],
         }),
+        TypeOrmModule.forFeature([UserEntity]),
+
         AuthModule,
         PriviledgeUserModule,
         UsersModule,
         AssetsModule,
         ShareLocationModule,
         ShareLocationWebsocketGatewayModule,
+        CustomerSupportModule,
     ],
     controllers: [AppController],
-    providers: [AppService],
+    providers: [
+        AppService,
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: LastSeenInterceptor, // 👈 global interceptor
+        },
+    ],
 })
 export class AppModule {}

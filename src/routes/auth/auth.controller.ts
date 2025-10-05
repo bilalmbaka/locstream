@@ -9,16 +9,17 @@ import {
     Patch,
     Get,
     Query,
-    Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
+    ChangePasswordDTO,
     LoginDTO,
     ResetPasswordDTO,
     SignupDTO,
     VerifyAccountDTO,
 } from 'src/domain/dtos/auth/auth.dto';
 import {
+    ApiBearerAuth,
     ApiBody,
     ApiExtraModels,
     ApiOperation,
@@ -28,11 +29,11 @@ import {
 import { ResponseDto, Status } from 'src/domain/dtos/response_dto';
 import { TokenModel, User } from 'src/domain/models/user.model';
 import { Helpers } from 'src/core/helpers/helpers';
-import { Strings } from 'src/core/constants/constants';
-import { UserRole } from 'src/core/constants/enums';
+import { Constants, Strings } from 'src/core/constants/constants';
 import { AuthenticatedUserGuard } from 'src/guards/authenticated_user_guard';
-import { AuthUser } from 'src/domain/auth_user_decorator';
 import { UserEntity } from 'src/domain/entities/user_entity';
+import { UserRole } from 'src/core/constants/enums';
+import { AuthUser } from 'src/domain/auth_user_decorator';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -176,6 +177,36 @@ export class AuthController {
         return this.authService.resetPassword(dto);
     }
 
+    //Change password route
+    @Patch('change-password')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(AuthenticatedUserGuard)
+
+    //Documentation
+    @ApiBearerAuth(Constants.swaggerBearerAuth)
+    @ApiOperation({
+        description: 'Change password',
+    })
+    @ApiExtraModels(ChangePasswordDTO)
+    @ApiResponse({
+        schema: {
+            type: 'object',
+            properties: new Status<string>().toDoc(
+                undefined,
+                Strings.successString,
+                HttpStatus.OK,
+                undefined,
+                true,
+            ),
+        },
+    })
+    changePassword(
+        @Body() dto: ChangePasswordDTO,
+        @AuthUser() user: UserEntity,
+    ): Promise<ResponseDto<string>> {
+        return this.authService.changePassword(dto, user);
+    }
+
     //Refresh token route
     @Patch('refresh-token')
     @HttpCode(HttpStatus.OK)
@@ -231,16 +262,5 @@ export class AuthController {
     })
     suggestUserNames(@Query('email') email: string): Promise<ResponseDto<string[]>> {
         return this.authService.suggestUserNames(email);
-    }
-
-    //Refresh token route
-    @UseGuards(AuthenticatedUserGuard)
-    @Post('logout')
-    @HttpCode(HttpStatus.OK)
-
-    //Documentation
-    @ApiOperation({})
-    logout(@Req() request: Request, @AuthUser() user: UserEntity): Promise<ResponseDto<string>> {
-        return this.authService.logout(request.headers['authorization'], user.id);
     }
 }

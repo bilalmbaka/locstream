@@ -5,11 +5,13 @@ import {
     HttpStatus,
     Injectable,
     InternalServerErrorException,
+    NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CleanData } from 'src/core/helpers/clean_data';
 import {
+    ChangePasswordDTO,
     LoginDTO,
     ResetPasswordDTO,
     SignupDTO,
@@ -26,6 +28,7 @@ import { AuthTokenService } from 'src/core/services/token_service';
 import { AccessTokenEntity } from 'src/domain/entities/access_token_entity';
 import { UserRole } from 'src/core/constants/enums';
 import { DBExceptionHandler } from 'src/core/exception_handlers/db_exception_handler';
+import { AuthUser } from 'src/domain/auth_user_decorator';
 import { Helpers } from 'src/core/helpers/helpers';
 
 @Injectable()
@@ -46,12 +49,13 @@ export class AuthService {
             const user = await this.userRepository.findOne({
                 where: [
                     {
-                        email: dto.email?.trim(),
+                        email: dto.email?.trim().toLowerCase(),
                     },
                     {
-                        userName: dto.userName?.trim(),
+                        userName: dto.userName?.trim().toLowerCase(),
                     },
                 ],
+                relations: ['profilePicture'],
             });
 
             if (!user) {
@@ -95,7 +99,7 @@ export class AuthService {
         try {
             const user = await this.userRepository.findOne({
                 where: [
-                    { email: dto.email.toLocaleLowerCase() },
+                    { email: dto.email.toLowerCase() },
                     // { userName: dto.userName.toLocaleLowerCase() },
                 ],
                 withDeleted: true,
@@ -116,7 +120,7 @@ export class AuthService {
 
             if (!user) {
                 await this.userRepository.save({
-                    email: dto.email,
+                    email: dto.email.toLowerCase(),
                     // userName: dto.userName,
                     password: await this._hashPassword(dto.password),
                     role: dto.role ? dto.role : UserRole.user,
@@ -146,7 +150,7 @@ export class AuthService {
             if (dto.verifyEmail === true) {
                 const user = await this.userRepository.findOne({
                     where: {
-                        email: dto.existingUserEmail,
+                        email: dto.existingUserEmail.toLowerCase(),
                     },
                     withDeleted: true,
                 });
@@ -162,7 +166,7 @@ export class AuthService {
             //Update user otp data
             await this.userRepository.update(
                 {
-                    email: dto.existingUserEmail,
+                    email: dto.existingUserEmail.toLowerCase(),
                 },
                 {
                     otp: otp,
@@ -171,7 +175,7 @@ export class AuthService {
             );
 
             this.emailService.sendMail({
-                to: dto.receiverEmail,
+                to: dto.receiverEmail.toLowerCase(),
                 subject: 'Your otp',
                 content: otp,
             });
@@ -186,7 +190,7 @@ export class AuthService {
         try {
             const user = await this.userRepository.findOneOrFail({
                 where: {
-                    email: dto.email,
+                    email: dto.email.toLowerCase(),
                 },
                 withDeleted: true,
             });
@@ -209,7 +213,7 @@ export class AuthService {
 
             if (user.deletedAt) {
                 await this.userRepository.restore({
-                    email: user.email,
+                    email: user.email.toLowerCase(),
                 });
             }
 
@@ -222,7 +226,7 @@ export class AuthService {
 
             await this.userRepository.update(
                 {
-                    email: user.email,
+                    email: user.email.toLowerCase(),
                 },
                 {
                     emailVerified: true,
@@ -238,7 +242,7 @@ export class AuthService {
     async resetPassword(dto: ResetPasswordDTO): Promise<ResponseDto<string>> {
         try {
             const user = await this.userRepository.findOneByOrFail({
-                email: dto.email,
+                email: dto.email.toLowerCase(),
             });
 
             if (user?.role != UserRole.user) {
@@ -261,7 +265,7 @@ export class AuthService {
 
             await this.userRepository.update(
                 {
-                    email: user.email,
+                    email: user.email.toLowerCase(),
                 },
                 {
                     emailVerified: true,
@@ -275,10 +279,38 @@ export class AuthService {
         }
     }
 
+    async changePassword(
+        dto: ChangePasswordDTO,
+        @AuthUser() user: UserEntity,
+    ): Promise<ResponseDto<string>> {
+        try {
+            console.log('user is ', user);
+            console.log('user is ', dto.oldPassword);
+            console.log('new user pass', user.password);
+
+            if ((await bcrypt.compare(dto.oldPassword, user.password)) == false) {
+                throw new UnauthorizedException('current password does not match');
+            }
+
+            const hashedPassword = await this._hashPassword(dto.newPassword);
+
+            await this.userRepository.update(
+                {
+                    id: user.id,
+                },
+                {
+                    password: hashedPassword,
+                },
+            );
+
+            return new Status<string>().success(Strings.successString, HttpStatus.OK);
+        } catch (e) {
+            throw DBExceptionHandler.handleException(e);
+        }
+    }
+
     async refreshToken(refreshToken: string): Promise<ResponseDto<TokenModel>> {
         try {
-            console.log('in refresh token token is', refreshToken);
-
             const token = await this.accessTokenRepository.findOneOrFail({
                 where: {
                     refreshToken: refreshToken,
@@ -292,7 +324,7 @@ export class AuthService {
 
             await this.accessTokenRepository.update(
                 {
-                    id: token.id,
+                    refreshToken: refreshToken,
                 },
                 {
                     accessToken: newTokens.accessToken,
@@ -365,19 +397,5 @@ export class AuthService {
         } as AccessTokenEntity);
 
         return cleanUser;
-    }
-
-    async logout(accessToken: string, userId: string): Promise<ResponseDto<string>> {
-        try {
-            const token = accessToken.substring(7);
-
-            await this.accessTokenRepository.delete({
-                accessToken: token,
-            });
-
-            return new Status<string>().success(Strings.successString, HttpStatus.OK);
-        } catch (e) {
-            throw DBExceptionHandler.handleException(e);
-        }
     }
 }
