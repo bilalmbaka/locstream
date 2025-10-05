@@ -15,7 +15,7 @@ import { UpdateUserProfileDTO } from 'src/domain/dtos/user/user_dto';
 import { AccessTokenEntity } from 'src/domain/entities/access_token_entity';
 import { UserEntity } from 'src/domain/entities/user_entity';
 import { User } from 'src/domain/models/user.model';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { AuthUser } from 'src/domain/auth_user_decorator';
 import { AssetsService } from 'src/routes/assets/assets.service';
 import { AuthService } from 'src/routes/auth/auth.service';
@@ -252,6 +252,31 @@ export class UsersService {
             if (userData) throw new ConflictException();
 
             return new Status<boolean>().success('Username available', HttpStatus.OK);
+        } catch (e) {
+            throw DBExceptionHandler.handleException(e);
+        }
+    }
+
+    async findUsers(
+        userName: string,
+        startAt: string,
+        endAt: string,
+    ): Promise<ResponseDto<User[]>> {
+        try {
+            const users = await this.userRepository.find({
+                where: { userName: ILike(`%${userName}%`) },
+                skip: Number(startAt ?? '0'),
+                take: Number(endAt ?? '20'),
+                order: {
+                    userName: 'ASC',
+                },
+            });
+
+            const cleanUsers = users.map((user) => {
+                return CleanData.cleanUser(user);
+            });
+
+            return new Status<User[]>().success(Strings.successString, HttpStatus.OK, cleanUsers);
         } catch (e) {
             throw DBExceptionHandler.handleException(e);
         }

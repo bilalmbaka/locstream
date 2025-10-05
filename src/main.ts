@@ -71,18 +71,18 @@ async function bootstrap() {
         console.log(`Documentation running on ${baseUrl}/docs`);
     });
 
-    // const cronJob = cron.schedule('*/5 * * * * *', async () => {
-    //     try {
-    //         const response = await axios.get('https://locstream.onrender.com/');
-    //         console.log('cron running ', response.data);
-    //     } catch (e) {
-    //         const error = e as AxiosError;
+    const cronJob = cron.schedule('* 1 * * * *', async () => {
+        try {
+            const response = await axios.get('https://locstream.onrender.com/');
+            console.log('cron running ', response.data);
+        } catch (e) {
+            const error = e as AxiosError;
 
-    //         console.log('error in cron job', error.message);
-    //     }
-    // });
+            console.log('error in cron job', error.message);
+        }
+    });
 
-    // console.log('cron initialized with id', cronJob.id);
+    console.log('cron initialized with id', cronJob.id);
 }
 
 bootstrap();

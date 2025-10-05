@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { CustomerSupportService } from './customer-support.service';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ResponseDto, Status } from 'src/domain/dtos/response_dto';
@@ -15,7 +15,7 @@ import { AuthenticatedUserGuard } from 'src/guards/authenticated_user_guard';
 export class CustomerSupportController {
     constructor(private readonly customerSupportService: CustomerSupportService) {}
 
-    @Patch('')
+    @Post('')
 
     //generate documentation
     @ApiOperation({

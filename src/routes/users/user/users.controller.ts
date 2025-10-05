@@ -5,7 +5,6 @@ import {
     Delete,
     Get,
     HttpStatus,
-    Param,
     Patch,
     Query,
     UploadedFile,
@@ -20,6 +19,7 @@ import {
     ApiConsumes,
     ApiExtraModels,
     ApiOperation,
+    ApiQuery,
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
@@ -173,5 +173,36 @@ export class UsersController {
         if (!userName) throw new BadRequestException();
 
         return this.usersService.checkUserNameAvailability(userName);
+    }
+
+    //find users route
+    @Get('/find')
+
+    //documentation
+    @ApiOperation({
+        description: '',
+    })
+    @ApiQuery({ name: 'userName', type: String, example: 'jhondoe', required: true })
+    @ApiQuery({ name: 'startAt', type: String, example: '0', required: false })
+    @ApiQuery({ name: 'endAt', type: String, example: '20', required: false })
+    @ApiResponse({
+        schema: {
+            type: 'object',
+            properties: new Status().toDoc(
+                Helpers.swaggerDocPath('User'),
+                undefined,
+                undefined,
+                'arrray',
+            ),
+        },
+    })
+    findUser(
+        @Query('userName') userName: string,
+        @Query('startAt') startAt?: string,
+        @Query('endAt') endAt?: string,
+    ): Promise<ResponseDto<User[]>> {
+        if (!userName) throw new BadRequestException();
+
+        return this.usersService.findUsers(userName, startAt ?? '0', endAt ?? '20');
     }
 }
