@@ -9,6 +9,7 @@ import {
     Patch,
     Get,
     Query,
+    Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
@@ -262,5 +263,16 @@ export class AuthController {
     })
     suggestUserNames(@Query('email') email: string): Promise<ResponseDto<string[]>> {
         return this.authService.suggestUserNames(email);
+    }
+
+    //Logout route
+    @UseGuards(AuthenticatedUserGuard)
+    @Post('logout')
+    @HttpCode(HttpStatus.OK)
+
+    //Documentation
+    @ApiOperation({})
+    logout(@Req() request: Request, @AuthUser() user: UserEntity): Promise<ResponseDto<string>> {
+        return this.authService.logout(request.headers['authorization']);
     }
 }

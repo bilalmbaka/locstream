@@ -398,4 +398,18 @@ export class AuthService {
 
         return cleanUser;
     }
+
+    async logout(accessToken: string): Promise<ResponseDto<string>> {
+        try {
+            const token = accessToken.substring(7);
+
+            await this.accessTokenRepository.delete({
+                accessToken: token,
+            });
+
+            return new Status<string>().success(Strings.successString, HttpStatus.OK);
+        } catch (e) {
+            throw DBExceptionHandler.handleException(e);
+        }
+    }
 }

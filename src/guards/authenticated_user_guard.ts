@@ -35,7 +35,7 @@ export class AuthenticatedUserGuard implements CanActivate {
             // const decoded = this.authTokenService.decode(token);
 
             if (this.authTokenService.hasExpired(token)) {
-                throw new ForbiddenException('Token has expired');
+                throw new UnauthorizedException('Token has expired');
             }
 
             //Fetch the user information.
@@ -50,10 +50,10 @@ export class AuthenticatedUserGuard implements CanActivate {
                 order: {},
             });
 
-            // console.log('in auth guard', authenticatedUser);
+            console.log('in auth guard', authenticatedUser);
 
             if (!authenticatedUser || authenticatedUser.user.emailVerified == false) {
-                throw new ForbiddenException('User not found');
+                throw new UnauthorizedException('User not found');
             }
 
             if (authenticatedUser.user.disabled) {
@@ -70,7 +70,7 @@ export class AuthenticatedUserGuard implements CanActivate {
             return true;
         } catch (e) {
             if (e instanceof TokenExpiredError) {
-                throw new ForbiddenException('Token has expired');
+                throw new UnauthorizedException('Token has expired');
             }
 
             throw e;
