@@ -13,7 +13,7 @@ export class UserEntity extends GeneralEntity {
 
     @Column({
         unique: true,
-        nullable: true,
+        nullable: false,
     })
     userName?: string;
 

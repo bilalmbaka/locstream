@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString, Length } from 'class-validator';
 import { Strings } from 'src/core/constants/constants';
 import { UserRole } from 'src/core/constants/enums';
 
@@ -67,6 +67,13 @@ export class SignupDTO {
     })
     @IsEmail()
     email: string;
+
+    @ApiProperty({
+        example: Strings.exampleUserName,
+    })
+    @IsString({})
+    @Length(3, 20)
+    userName: string;
 
     @ApiProperty({
         example: Strings.examplePassword,

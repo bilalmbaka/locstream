@@ -5,7 +5,6 @@ import {
     HttpStatus,
     Injectable,
     InternalServerErrorException,
-    NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -55,8 +54,12 @@ export class AuthService {
                         userName: dto.userName?.trim().toLowerCase(),
                     },
                 ],
-                relations: ['profilePicture'],
+                relations: {
+                    profilePicture: true,
+                },
             });
+
+            console.log('user is ===> ', user);
 
             if (!user) {
                 throw new UnauthorizedException(errorText);
@@ -100,15 +103,19 @@ export class AuthService {
             const user = await this.userRepository.findOne({
                 where: [
                     { email: dto.email.toLowerCase() },
-                    // { userName: dto.userName.toLocaleLowerCase() },
+                    { userName: dto.userName.toLocaleLowerCase() },
                 ],
                 withDeleted: true,
             });
 
             if (user) {
-                // if (user.userName == dto.userName.toLowerCase()) {
-                //     throw new ConflictException('User with user name already exists');
-                // }
+                if (
+                    user.userName == dto.userName.toLowerCase() &&
+                    user.emailVerified &&
+                    !user.deletedAt
+                ) {
+                    throw new ConflictException('User with user name already exists');
+                }
                 if (
                     user.email == user.email.toLowerCase() &&
                     user.emailVerified &&
@@ -118,14 +125,12 @@ export class AuthService {
                 }
             }
 
-            if (!user) {
-                await this.userRepository.save({
-                    email: dto.email.toLowerCase(),
-                    // userName: dto.userName,
-                    password: await this._hashPassword(dto.password),
-                    role: dto.role ? dto.role : UserRole.user,
-                } as UserEntity);
-            }
+            await this.userRepository.save({
+                email: dto.email.toLowerCase(),
+                userName: dto.userName.toLowerCase(),
+                password: await this._hashPassword(dto.password),
+                role: dto.role ? dto.role : UserRole.user,
+            } as UserEntity);
 
             if (dto.role == UserRole.user) {
                 await this.sendOtp({
@@ -223,6 +228,8 @@ export class AuthService {
                 dto.os,
                 dto.osVersion,
             );
+
+            cleanUser.emailVerified = true;
 
             await this.userRepository.update(
                 {

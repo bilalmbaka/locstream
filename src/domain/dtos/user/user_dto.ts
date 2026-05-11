@@ -70,12 +70,12 @@ export class UpdateUserProfileDTO {
     @IsOptional()
     profilePic: string[];
 
-    @ApiProperty({
-        example: Strings.exampleEmail,
-    })
-    @IsEmail()
-    @IsOptional()
-    email: string;
+    // @ApiProperty({
+    //     example: Strings.exampleEmail,
+    // })
+    // @IsEmail()
+    // @IsOptional()
+    // email: string;
 
     @ApiProperty({
         example: Strings.exampleUserName,

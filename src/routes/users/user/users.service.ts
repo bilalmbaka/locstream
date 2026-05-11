@@ -86,24 +86,23 @@ export class UsersService {
         try {
             var picture: AssetsEntity | undefined;
 
-            if (dto.email) {
-                const existingUser = await this.userRepository.findOneBy([
-                    {
-                        email: dto.email,
-                        emailVerified: true,
-                    },
-                ]);
+            // if (dto.email) {
+            //     const existingUser = await this.userRepository.findOneBy([
+            //         {
+            //             email: dto.email,
+            //         },
+            //     ]);
 
-                if (existingUser) {
-                    throw new ConflictException(`Email taken`);
-                }
+            //     if (existingUser) {
+            //         throw new ConflictException(`Email taken`);
+            //     }
 
-                return await this.authService.sendOtp({
-                    existingUserEmail: user.email,
-                    receiverEmail: dto.email,
-                    verifyEmail: true,
-                });
-            }
+            //     return await this.authService.sendOtp({
+            //         existingUserEmail: user.email,
+            //         receiverEmail: dto.email,
+            //         verifyEmail: true,
+            //     });
+            // }
 
             if (dto.userName) {
                 const existingUser = await this.userRepository.findOneBy([

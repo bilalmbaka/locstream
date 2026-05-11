@@ -201,6 +201,8 @@ export class UsersController {
         @Query('startAt') startAt?: string,
         @Query('endAt') endAt?: string,
     ): Promise<ResponseDto<User[]>> {
+        console.log('query is', userName);
+
         if (!userName) throw new BadRequestException();
 
         return this.usersService.findUsers(userName, startAt ?? '0', endAt ?? '20');

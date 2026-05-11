@@ -6,14 +6,12 @@ import { ExceptionHandler } from './core/exception_handlers/exception_handler';
 import { Status } from './domain/dtos/response_dto';
 import { Constants, Strings } from './core/constants/constants';
 import { v2 as cloudinary } from 'cloudinary';
-import cron, { ScheduledTask } from 'node-cron';
-import axios, { AxiosError } from 'axios';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
     app.enableCors({
-        origin: (origin, callback) => {
+        origin: (_, callback) => {
             return callback(null, true);
         },
     });
@@ -66,23 +64,23 @@ async function bootstrap() {
     });
 
     await app.listen(process.env.PORT ?? 5001, () => {
-        const baseUrl = `http://localhost:${process.env.PORT ?? 3000}/api/v1`;
+        const baseUrl = `http://localhost:${process.env.PORT ?? 5001}/api/v1`;
         console.log(`Server running on port ${baseUrl}`);
         console.log(`Documentation running on ${baseUrl}/docs`);
     });
 
-    const cronJob = cron.schedule('*/60 * * * * *', async () => {
-        try {
-            const response = await axios.get('https://locstream.onrender.com/');
-            console.log('cron running ', response.data);
-        } catch (e) {
-            const error = e as AxiosError;
+    // const cronJob = cron.schedule('*/60 * * * * *', async () => {
+    //     try {
+    //         const response = await axios.get('https://locstream.onrender.com/');
+    //         console.log('cron running ', response.data);
+    //     } catch (e) {
+    //         const error = e as AxiosError;
 
-            console.log('error in cron job', error.message);
-        }
-    });
+    //         console.log('error in cron job', error.message);
+    //     }
+    // });
 
-    console.log('cron initialized with id', cronJob.id);
+    // console.log('cron initialized with id', cronJob.id);
 }
 
 bootstrap();
