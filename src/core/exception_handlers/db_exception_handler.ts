@@ -10,7 +10,7 @@ export class DBException extends Error {
 }
 
 export class DBExceptionHandler {
-    static handleException(error: Object): Object {
+    static handleException(error: any): Object {
         if (error instanceof QueryFailedError) {
             const cast = error as QueryFailedError;
 

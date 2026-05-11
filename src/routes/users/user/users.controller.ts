@@ -34,13 +34,13 @@ import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
-@UseGuards(AuthenticatedUserGuard)
 @ApiBearerAuth(Constants.swaggerBearerAuth)
 @ApiTags('user')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
     @Get('/profile')
+    @UseGuards(AuthenticatedUserGuard)
 
     //documentation
     @ApiOperation({
@@ -63,6 +63,7 @@ export class UsersController {
 
     //update user profile route
     @Patch('/update-profile')
+    @UseGuards(AuthenticatedUserGuard)
     @UseInterceptors(
         FileInterceptor(
             'profilePic',
@@ -116,6 +117,7 @@ export class UsersController {
 
     //update user profile route
     @Delete('/delete-profile')
+    @UseGuards(AuthenticatedUserGuard)
 
     //documentation
     @ApiOperation({})
@@ -132,6 +134,7 @@ export class UsersController {
 
     //Change user email
     @Patch('/change-email')
+    @UseGuards(AuthenticatedUserGuard)
 
     //documentation
     @ApiOperation({})
@@ -177,6 +180,7 @@ export class UsersController {
 
     //find users route
     @Get('/find')
+    @UseGuards(AuthenticatedUserGuard)
 
     //documentation
     @ApiOperation({

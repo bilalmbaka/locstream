@@ -125,12 +125,13 @@ export class AuthService {
                 }
             }
 
-            await this.userRepository.save({
-                email: dto.email.toLowerCase(),
-                userName: dto.userName.toLowerCase(),
-                password: await this._hashPassword(dto.password),
-                role: dto.role ? dto.role : UserRole.user,
-            } as UserEntity);
+            const userEntity = user ?? new UserEntity();
+            userEntity.email = dto.email.toLowerCase();
+            userEntity.password = await this._hashPassword(dto.password);
+            userEntity.userName = dto.userName.toLowerCase();
+            userEntity.role = dto.role ? dto.role : UserRole.user;
+
+            await this.userRepository.save(userEntity);
 
             if (dto.role == UserRole.user) {
                 await this.sendOtp({
@@ -209,11 +210,11 @@ export class AuthService {
             }
 
             if (Date.now() - user.otpSentAt!.getTime() > 5 * 60 * 1000) {
-                throw new UnauthorizedException('Otp exipred');
+                throw new BadRequestException('Otp exipred');
             }
 
             if (!user || dto.otp !== user.otp) {
-                throw new UnauthorizedException('Incorrect  otp');
+                throw new BadRequestException('Incorrect  otp');
             }
 
             if (user.deletedAt) {
@@ -261,11 +262,11 @@ export class AuthService {
             }
 
             if (Date.now() - user.otpSentAt!.getTime() > 5 * 60 * 1000) {
-                throw new UnauthorizedException('Otp exipred');
+                throw new BadRequestException('Otp exipred');
             }
 
             if (!user || dto.otp !== user.otp) {
-                throw new UnauthorizedException('Incorrect  otp');
+                throw new BadRequestException('Incorrect  otp');
             }
 
             const hashedPassword = await this._hashPassword(dto.password);
