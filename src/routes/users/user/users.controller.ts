@@ -76,7 +76,7 @@ export class UsersController {
                         cb(null, file.originalname);
                     },
                 }),
-                limits: { fileSize: 2 * 1024 * 1024, files: 1 }, // applies per file
+                limits: { fileSize: 6 * 1024 * 1024, files: 1 }, // applies per file
                 dest: './uploads/',
                 fileFilter: (req, file, cb) => {
                     if (file.mimetype.startsWith('image/')) {
