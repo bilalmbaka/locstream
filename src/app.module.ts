@@ -17,6 +17,7 @@ import { LastSeenInterceptor } from './last_seen_interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CustomerSupportEntity } from './domain/entities/customer_support_entity';
 import { CustomerSupportModule } from './routes/customer-support/customer-support.module';
+import { AiModule } from './routes/ai/ai.module';
 
 @Module({
     imports: [
@@ -45,6 +46,7 @@ import { CustomerSupportModule } from './routes/customer-support/customer-suppor
         ShareLocationModule,
         ShareLocationWebsocketGatewayModule,
         CustomerSupportModule,
+        AiModule,
     ],
     controllers: [AppController],
     providers: [
