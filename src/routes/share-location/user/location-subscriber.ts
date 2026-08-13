@@ -3,6 +3,7 @@ import { DataSource, EntitySubscriberInterface, EventSubscriber, UpdateEvent } f
 import { ConnectedUsersService } from './connected_users_service';
 import { Constants } from 'src/core/constants/constants';
 import { CleanData } from 'src/core/helpers/clean_data';
+import { Enviroment } from 'src/core/constants/enums';
 
 @EventSubscriber()
 export class UserLocationSubscriber implements EntitySubscriberInterface<UserEntity> {
@@ -46,7 +47,9 @@ export class UserLocationSubscriber implements EntitySubscriberInterface<UserEnt
 
             const subscribers = profile.locationReceivers;
 
-            // console.log('location receivers', subscribers);
+            if (Enviroment.isDev) {
+                console.log('location receivers', subscribers);
+            }
 
             const sockets = subscribers.flatMap((subscriber) => {
                 //TODO check last seen for each subscriber if the user has not been seen for the past 3 hours send push notification to bring them
@@ -60,7 +63,9 @@ export class UserLocationSubscriber implements EntitySubscriberInterface<UserEnt
 
             return [];
         } catch (e) {
-            console.log('Error fetching user location subscribers', e);
+            if (Enviroment.isDev) {
+                console.log('Error fetching user location subscribers', e);
+            }
             return [];
         }
     }

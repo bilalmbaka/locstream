@@ -257,13 +257,16 @@ export class UsersService {
     }
 
     async findUsers(
+        authUser: UserEntity,
         userName: string,
         startAt: string,
         endAt: string,
     ): Promise<ResponseDto<User[]>> {
         try {
             const users = await this.userRepository.find({
-                where: { userName: ILike(`%${userName}%`) },
+                where: {
+                    userName: ILike(`%${userName}%`),
+                },
                 skip: Number(startAt ?? '0'),
                 take: Number(endAt ?? '20'),
                 order: {
@@ -275,7 +278,13 @@ export class UsersService {
                 return CleanData.cleanUser(user);
             });
 
-            return new Status<User[]>().success(Strings.successString, HttpStatus.OK, cleanUsers);
+            return new Status<User[]>().success(
+                Strings.successString,
+                HttpStatus.OK,
+                cleanUsers.filter((u) => {
+                    return u.userName!.toLowerCase() != authUser.userName!.toLowerCase();
+                }),
+            );
         } catch (e) {
             throw DBExceptionHandler.handleException(e);
         }

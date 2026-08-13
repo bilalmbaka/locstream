@@ -2,7 +2,6 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 import { UserEntity } from './domain/entities/user_entity';
 
 @Injectable()

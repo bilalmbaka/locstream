@@ -50,7 +50,7 @@ export class AuthenticatedUserGuard implements CanActivate {
                 order: {},
             });
 
-            console.log('in auth guard', authenticatedUser);
+            // console.log('in auth guard', authenticatedUser);
 
             if (!authenticatedUser || authenticatedUser.user.emailVerified == false) {
                 throw new UnauthorizedException('User not found');

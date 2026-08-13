@@ -201,6 +201,7 @@ export class UsersController {
         },
     })
     findUser(
+        @AuthUser() user: UserEntity,
         @Query('userName') userName: string,
         @Query('startAt') startAt?: string,
         @Query('endAt') endAt?: string,
@@ -209,6 +210,6 @@ export class UsersController {
 
         if (!userName) throw new BadRequestException();
 
-        return this.usersService.findUsers(userName, startAt ?? '0', endAt ?? '20');
+        return this.usersService.findUsers(user, userName, startAt ?? '0', endAt ?? '20');
     }
 }
