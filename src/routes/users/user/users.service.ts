@@ -241,8 +241,12 @@ export class UsersService {
                 throw new BadRequestException('Username must contain only letters and numbers');
             }
 
-            const userData = await this.userRepository.findOneBy({
-                userName: username.trim().toLowerCase(),
+            const userData = await this.userRepository.findOne({
+                where: {
+                    userName: username.trim().toLowerCase(),
+                    emailVerified: true,
+                },
+                withDeleted: true,
             });
 
             console.log('userdata', userData);
